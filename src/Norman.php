@@ -27,7 +27,7 @@ class Norman
         }
     }
 
-    public function find($id)
+    public function find(int $id) : Norman
     {
         $query = 'SELECT * FROM ' . $this->table() . ' WHERE id = :id';
 
@@ -37,7 +37,7 @@ class Norman
         return new static($this->db, $sth->fetch());
     }
 
-    private function table()
+    private function table() : string
     {
         $fqClassName = get_class($this);
         $unqualifiedClass = explode('\\', $fqClassName)[0];
@@ -45,11 +45,11 @@ class Norman
         return strtolower($unqualifiedClass);
     }
 
-    private function getValues()
+    private function getValues() : array
     {
         $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC);
 
-        return array_reduce($properties, function ($carry, $property) {
+        return array_reduce($properties, function (array $carry, ReflectionProperty $property) {
             $property = $property->getName();
 
             if (empty($this->{$property})) {
@@ -60,7 +60,7 @@ class Norman
         }, []);
     }
 
-    public function save()
+    public function save() : bool
     {
         $values = $this->getValues();
 
@@ -71,7 +71,7 @@ class Norman
         return $this->insert($values);
     }
 
-    private function insert(array $values)
+    private function insert(array $values) : bool
     {
         $columns = array_keys($values);
 
@@ -91,11 +91,11 @@ class Norman
         return true;
     }
 
-    private function update(array $values)
+    private function update(array $values) : bool
     {
         $columns = array_keys($values);
 
-        $sets = array_reduce($columns, function ($carry, $column) {
+        $sets = array_reduce($columns, function (array $carry, string $column) {
             return array_merge($carry, [$column . ' = :' . $column]);
         }, []);
 
