@@ -13,8 +13,8 @@ $pdo = new PDO('sqlite::memory:', '', '', [
 $pdo->exec('CREATE TABLE test (id INTEGER PRIMARY KEY ASC, something);');
 $pdo->exec('INSERT INTO test (something) VALUES ("abc");');
 
-var_dump(
-    (new Test($pdo))->find(1)
+assert(
+    (new Test($pdo))->find(1)->something === 'abc'
 );
 
 $test = new Test($pdo);
@@ -24,8 +24,14 @@ $test->save();
 
 $sth = $pdo->prepare('SELECT * FROM test;');
 $sth->execute();
+$results = $sth->fetchAll();
 
-var_dump($sth->fetchAll());
+assert(
+    count($results) === 2
+);
+assert(
+    $results[1]['something'] === 'bob'
+);
 
 $test->something = 'bobby';
 
@@ -34,4 +40,6 @@ $test->save();
 $sth = $pdo->prepare('SELECT * FROM test;');
 $sth->execute();
 
-var_dump($sth->fetchAll());
+assert(
+    $sth->fetchAll()[1]['something'] === 'bobby'
+);
