@@ -1,9 +1,16 @@
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/TestModels/Test.php';
+namespace imjoehaines;
 
+require __DIR__ . '/vendor/autoload.php';
+
+use PDO;
 use imjoehaines\Norman\Norman;
+
+class Test extends Norman
+{
+    public $something;
+}
 
 $pdo = new PDO('sqlite::memory:', '', '', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
