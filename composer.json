@@ -9,5 +9,10 @@
             "name": "Joe Haines",
             "email": "hello@joehaines.co.uk"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": {
+            "imjoehaines\\Norman\\": "src/"
+        }
+    }
 }
