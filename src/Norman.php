@@ -27,15 +27,19 @@ class Norman
     public function __construct(PDO $db, array $properties = [])
     {
         $this->db = $db;
+        $this->table = $this->getTableName();
 
         foreach ($properties as $key => $value) {
             $this->{$key} = $value;
         }
+    }
 
+    private function getTableName() : string
+    {
         $classNamespace = explode('\\', get_class($this));
         $unqualifiedClass = array_pop($classNamespace);
 
-        $this->table = s($unqualifiedClass)->underscored();
+        return (string) s($unqualifiedClass)->underscored();
     }
 
     public function find(int $id) : Norman
