@@ -30,8 +30,8 @@ class Norman
             $this->{$key} = $value;
         }
 
-        $fqClassName = get_class($this);
-        $unqualifiedClass = explode('\\', $fqClassName)[0];
+        $classNamespace = explode('\\', get_class($this));
+        $unqualifiedClass = array_pop($classNamespace);
 
         $this->table = strtolower($unqualifiedClass);
     }
