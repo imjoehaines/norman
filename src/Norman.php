@@ -8,6 +8,8 @@ use PDO;
 use ReflectionClass;
 use ReflectionProperty;
 
+use function Stringy\create as s;
+
 class Norman
 {
     /**
@@ -33,7 +35,7 @@ class Norman
         $classNamespace = explode('\\', get_class($this));
         $unqualifiedClass = array_pop($classNamespace);
 
-        $this->table = strtolower($unqualifiedClass);
+        $this->table = s($unqualifiedClass)->underscored();
     }
 
     public function find(int $id) : Norman

@@ -12,6 +12,11 @@ class Test extends Norman
     public $something;
 }
 
+class AnotherTest extends Norman
+{
+    public $another;
+}
+
 $pdo = new PDO('sqlite::memory:', '', '', [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_WARNING,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
@@ -20,8 +25,14 @@ $pdo = new PDO('sqlite::memory:', '', '', [
 $pdo->exec('CREATE TABLE test (id INTEGER PRIMARY KEY ASC, something);');
 $pdo->exec('INSERT INTO test (something) VALUES ("abc");');
 
+$pdo->exec('CREATE TABLE another_test (id INTEGER PRIMARY KEY ASC, another);');
+$pdo->exec('INSERT INTO another_test (another) VALUES ("aaa");');
+
 assert(
     (new Test($pdo))->find(1)->something === 'abc'
+);
+assert(
+    (new AnotherTest($pdo))->find(1)->another === 'aaa'
 );
 
 $test = new Test($pdo);

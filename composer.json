@@ -14,5 +14,8 @@
         "psr-4": {
             "imjoehaines\\Norman\\": "src/"
         }
+    },
+    "require": {
+        "danielstjules/stringy": "^2.3"
     }
 }
