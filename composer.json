@@ -1,0 +1,13 @@
+{
+    "name": "imjoehaines/norman",
+    "require-dev": {
+        "laravel/homestead": "^3.0"
+    },
+    "license": "ISC",
+    "authors": [
+        {
+            "name": "Joe Haines",
+            "email": "hello@joehaines.co.uk"
+        }
+    ]
+}
