@@ -15,6 +15,8 @@ class Norman
      */
     private $db;
 
+    private $table;
+
     public $id;
 
     /**
@@ -27,24 +29,21 @@ class Norman
         foreach ($properties as $key => $value) {
             $this->{$key} = $value;
         }
+
+        $fqClassName = get_class($this);
+        $unqualifiedClass = explode('\\', $fqClassName)[0];
+
+        $this->table = strtolower($unqualifiedClass);
     }
 
     public function find(int $id) : Norman
     {
-        $query = 'SELECT * FROM ' . $this->table() . ' WHERE id = :id';
+        $query = 'SELECT * FROM ' . $this->table . ' WHERE id = :id';
 
         $sth = $this->db->prepare($query);
         $sth->execute(['id' => $id]);
 
         return new static($this->db, $sth->fetch());
-    }
-
-    private function table() : string
-    {
-        $fqClassName = get_class($this);
-        $unqualifiedClass = explode('\\', $fqClassName)[0];
-
-        return strtolower($unqualifiedClass);
     }
 
     private function getValues() : array
@@ -79,7 +78,7 @@ class Norman
 
         $query = sprintf(
             'INSERT INTO %s (%s) VALUES (:%s);',
-            $this->table(),
+            $this->table,
             implode(', ', $columns),
             implode(', :', $columns)
         );
@@ -103,7 +102,7 @@ class Norman
 
         $query = sprintf(
             'UPDATE %s SET %s WHERE id = :id;',
-            $this->table(),
+            $this->table,
             implode(', ', $sets)
         );
 
