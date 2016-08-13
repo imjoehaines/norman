@@ -3,7 +3,8 @@
 namespace imjoehaines\Norman;
 
 use PDO;
-use BadMethodCallException;
+use ReflectionClass;
+use ReflectionProperty;
 
 class Norman
 {
@@ -12,7 +13,7 @@ class Norman
      */
     private $db;
 
-    protected $id;
+    public $id;
 
     /**
      * @param PDO $db
@@ -22,24 +23,8 @@ class Norman
         $this->db = $db;
 
         foreach ($properties as $key => $value) {
-            $this->$key($value);
+            $this->{$key} = $value;
         }
-    }
-
-    public function __call($method, $arguments)
-    {
-        if (property_exists(get_class($this), $method)) {
-            $this->$method = $arguments[0];
-
-            return $this;
-        }
-
-        throw new BadMethodCallException(sprintf(
-            '%s - Could not find a "%s::%s" method',
-            __CLASS__,
-            get_class($this),
-            $method
-        ));
     }
 
     public function find($id)
@@ -60,17 +45,65 @@ class Norman
         return strtolower($unqualifiedClass);
     }
 
+    private function getValues()
+    {
+        $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        return array_reduce($properties, function ($carry, $property) {
+            $property = $property->getName();
+
+            if (empty($this->{$property})) {
+                return $carry;
+            }
+
+            return array_merge($carry, [$property => $this->{$property}]);
+        }, []);
+    }
+
     public function save()
     {
-        $properties = get_object_vars($this);
+        $values = $this->getValues();
 
-        $values = array_filter($properties, function ($value, $property) {
-            return !empty($value) && $property !== 'db';
-        }, ARRAY_FILTER_USE_BOTH);
+        if ($this->id) {
+            return $this->update($values);
+        }
 
+        return $this->insert($values);
+    }
+
+    private function insert(array $values)
+    {
         $columns = array_keys($values);
 
-        $query = 'INSERT INTO ' . $this->table() . ' (' . implode(', ', $columns) . ') VALUES (:' . implode(', :', $columns) . ');';
+        $query = sprintf(
+            'INSERT INTO %s (%s) VALUES (:%s);',
+            $this->table(),
+            implode(', ', $columns),
+            implode(', :', $columns)
+        );
+
+        $sth = $this->db->prepare($query);
+
+        $sth->execute($values);
+
+        $this->id = $this->db->lastInsertId();
+
+        return true;
+    }
+
+    private function update(array $values)
+    {
+        $columns = array_keys($values);
+
+        $sets = array_reduce($columns, function ($carry, $column) {
+            return array_merge($carry, [$column . ' = :' . $column]);
+        }, []);
+
+        $query = sprintf(
+            'UPDATE %s SET %s WHERE id = :id;',
+            $this->table(),
+            implode(', ', $sets)
+        );
 
         $sth = $this->db->prepare($query);
 

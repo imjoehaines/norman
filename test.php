@@ -17,7 +17,17 @@ var_dump(
     (new Test($pdo))->find(1)
 );
 
-$test = (new Test($pdo))->something('bob');
+$test = new Test($pdo);
+$test->something = 'bob';
+
+$test->save();
+
+$sth = $pdo->prepare('SELECT * FROM test;');
+$sth->execute();
+
+var_dump($sth->fetchAll());
+
+$test->something = 'bobby';
 
 $test->save();
 
