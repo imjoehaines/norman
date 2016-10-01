@@ -17,23 +17,49 @@ class Norman
      */
     private $db;
 
+    /**
+     * @var string
+     */
     protected $table;
 
-    public $id;
+    /**
+     * @var array
+     */
+    protected $columns = ['id'];
+
+    /**
+     * @var integer
+     */
+    protected $id;
 
     /**
      * @param PDO $db
+     * @param array $properties
      */
     public function __construct(PDO $db, array $properties = [])
     {
         $this->db = $db;
         $this->table = $this->table ?: $this->getTableName();
 
-        foreach ($properties as $key => $value) {
+        $validProperties = array_filter($properties, [$this, 'isColumnValid'], ARRAY_FILTER_USE_KEY);
+
+        foreach ($validProperties as $key => $value) {
             $this->{$key} = $value;
         }
     }
 
+    /**
+     * @param string $column
+     * @return boolean
+     */
+    private function isColumnValid(string $column) : bool
+    {
+        return in_array($column, $this->columns, true);
+    }
+
+    /**
+     * @return string
+     */
     private function getTableName() : string
     {
         $classNamespace = explode('\\', get_class($this));
@@ -42,6 +68,10 @@ class Norman
         return (string) s($unqualifiedClass)->underscored();
     }
 
+    /**
+     * @param integer $id
+     * @return Norman
+     */
     public function find(int $id) : Norman
     {
         $query = 'SELECT * FROM ' . $this->table . ' WHERE id = :id';
@@ -52,21 +82,23 @@ class Norman
         return new static($this->db, $sth->fetch());
     }
 
+    /**
+     * @return array
+     */
     private function getValues() : array
     {
-        $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC);
-
-        return array_reduce($properties, function (array $carry, ReflectionProperty $property) {
-            $property = $property->getName();
-
-            if (empty($this->{$property})) {
+        return array_reduce($this->columns, function (array $carry, string $column) {
+            if (empty($this->{$column})) {
                 return $carry;
             }
 
-            return array_merge($carry, [$property => $this->{$property}]);
+            return array_merge($carry, [$column => $this->{$column}]);
         }, []);
     }
 
+    /**
+     * @return boolean
+     */
     public function save() : bool
     {
         $values = $this->getValues();
@@ -78,6 +110,10 @@ class Norman
         return $this->insert($values);
     }
 
+    /**
+     * @param array $values
+     * @return boolean
+     */
     private function insert(array $values) : bool
     {
         $columns = array_keys($values);
@@ -98,6 +134,10 @@ class Norman
         return true;
     }
 
+    /**
+     * @param array $values
+     * @return boolean
+     */
     private function update(array $values) : bool
     {
         $columns = array_keys($values);

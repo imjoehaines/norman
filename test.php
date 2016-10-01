@@ -10,11 +10,15 @@ use imjoehaines\Norman\Norman;
 class Test extends Norman
 {
     public $something;
+
+    protected $columns = ['id', 'something'];
 }
 
 class AnotherTest extends Norman
 {
     public $another;
+
+    protected $columns = ['id', 'another'];
 }
 
 $pdo = new PDO('sqlite::memory:', '', '', [
