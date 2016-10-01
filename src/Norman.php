@@ -17,7 +17,7 @@ class Norman
      */
     private $db;
 
-    private $table;
+    protected $table;
 
     public $id;
 
@@ -27,7 +27,7 @@ class Norman
     public function __construct(PDO $db, array $properties = [])
     {
         $this->db = $db;
-        $this->table = $this->getTableName();
+        $this->table = $this->table ?: $this->getTableName();
 
         foreach ($properties as $key => $value) {
             $this->{$key} = $value;
